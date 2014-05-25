@@ -1,0 +1,15 @@
+[==========] Running 2 tests from 1 test case.
+[----------] Global test environment set-up.
+[----------] 2 tests from CTestMatrix
+[ RUN      ] CTestMatrix.determinant_2_valid_data_ok
+        1        2
+        3        4
+[       OK ] CTestMatrix.determinant_2_valid_data_ok (0 ms)
+[ RUN      ] CTestMatrix.determinant_3_valid_data_ok
+        4        -34        52
+        3        9        -24
+        -14        4        -1.34086
+matrix_test.h:45: Failure
+Value of: res == 14520
+  Actual: false
+Expected: true
