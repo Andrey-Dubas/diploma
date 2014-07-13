@@ -16,6 +16,7 @@ class CTestMatrix: public ::testing::Test {
 	// methon undef test _ tested scenario _ expected result
 	//
 	void multiply_3_validData_ok();
+	void multiplyMixed_ok();
 
 	void elemAccess_3_outOfArray_exception();
 	
