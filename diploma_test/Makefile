@@ -4,7 +4,7 @@ TEST_INCLUDE_DIR=/usr/local/include
 TEST_LIB_DIR=/usr/local/lib
 TEST_LIB=gtest
 
-TEST_SOURCE=main.cpp matrix_test.cpp OperStruct.cpp 
+TEST_SOURCE=main.cpp matrix_test.cpp OperStruct.cpp KalmanTest.cpp 
 TEST_OBJ=$(TEST_SOURCE:.cpp=.o)
 
 %.o: %.cpp 
