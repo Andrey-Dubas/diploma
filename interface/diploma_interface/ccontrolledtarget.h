@@ -15,20 +15,23 @@ enum KeyDirection
 class CControlledTarget
 {
 private:
-    Point3D _position, _velocity, _accel;
-    float _retardKoef = 0.1;
+    Point3D _position, _velocity;
+    float _retardKoef = 5;
 public:
-
     CControlledTarget(Point3D position, Point3D speed):
         _position(position),
-        _velocity(speed),
-        _accel(_velocity * _retardKoef)
+        _velocity(speed)//,
+        //_accel(_velocity * _retardKoef)
     {
     }
 
-    void timeStep(float dt, KeyDirection accelDirection);
+    Point3D timeStep(float dt, KeyDirection accelDirection);
 
     CControlledTarget();
+
+    Point3D Position() const{ return _position;}
+    Point3D Speed() const { return _velocity; }
+    //Point3D Acceleration() const {return _accel; }
 };
 
 #endif // CCONTROLLEDTARGET_H

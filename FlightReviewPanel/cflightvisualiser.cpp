@@ -8,6 +8,46 @@
 #include </home/andy/diploma_code_2/diploma/matrix.h>
 #include </home/andy/diploma_code_2/diploma/DataOperations.h>
 #include "cflightvisualiser.h"
+#include <sstream>
+
+void Vector3D::AddAlpha(float alpha)
+{
+    _alpha += alpha;
+    if(_alpha > pi)
+    {
+        _alpha -= 2 * pi;
+    }
+
+    if (_alpha < -pi)
+    {
+        _alpha += 2 * pi;
+    }
+}
+
+void Vector3D::AddBeta(float beta)
+{
+    _beta += beta;
+    if(_beta > pi)
+    {
+        _beta -= 2 * pi;
+    }
+
+    if (_beta < -pi)
+    {
+        _beta += 2*pi;
+    }
+}
+
+Vector3D operator+(const Vector3D& lhs, const Vector3D& rhs)
+{
+    return Vector3D(lhs.Alpha() + rhs.Alpha(), lhs.Beta() + rhs.Beta());
+}
+
+Vector3D operator-(const Vector3D& lhs, const Vector3D& rhs)
+{
+    return Vector3D(lhs.Alpha() - rhs.Alpha(), lhs.Beta() - rhs.Beta());
+}
+
 
 
 Point3D operator*(const Point3D& p, float dt)
@@ -17,14 +57,33 @@ Point3D operator*(const Point3D& p, float dt)
 
 Point3D operator+(const Point3D& p1, const Point3D& p2)
 {
-    return Point3D(p1.X() * p2.X(), p1.Y() * p2.Y(), p1.Z() * p2.Z() );
+    return Point3D(p1.X() + p2.X(), p1.Y() + p2.Y(), p1.Z() + p2.Z() );
+}
+
+Point3D operator-(const Point3D& lhs, const Point3D rhs)
+{
+    return Point3D(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z() );
 }
 
 Point3D operator*(Vector3D v, float scalar)
 {
-    return Point3D( scalar * cos(v.Beta()) * cos(v.Alpha()),
-                  scalar * cos(v.Beta()) * sin(v.Alpha()),
-                  scalar * sin(v.Beta()));
+    float x = scalar * cos(v.Beta()) * cos(v.Alpha());
+    float y = scalar * cos(v.Beta()) * sin(v.Alpha());
+    float z = scalar * sin(v.Beta());
+    return Point3D(x, y, z);
+}
+
+std::string Point3D::toString() const
+{
+    std::stringstream stream;
+    stream << "X: "<< X() << ", Y: " << Y() << ", Z: " << Z();
+    return stream.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const Point3D p)
+{
+    os << p.toString() << std::endl;
+    return os;
 }
 
 CFlightVisualiser::CFlightVisualiser(QWidget *parent, Point3D target, Point2D centralScreenPoint, Point3D scaleView, Vector3D viewPoint):
@@ -42,10 +101,26 @@ CFlightVisualiser::CFlightVisualiser(QWidget *parent) :
 
 }
 
+Point3D rotate(const Point3D& p, const Vector3D &v)
+{
+    Util::Vector<float, 3> ini = {p.X(), p.Y(), p.Z()};
+    float alpha = v.Alpha();
+    float beta = v.Beta();
+
+    Util::Matrix<float, 3, 3> rotateY = { std::cos(beta), 0, std::sin(beta),
+                                          0             , 1, 0,
+                                          -std::sin(beta), 0, std::cos(beta)};
+
+    Util::Matrix<float, 3, 3> rotateZ = { std::cos(alpha), std::sin(alpha), 0,
+                                          -std::sin(alpha), std::cos(alpha), 0,
+                                          0             ,              0, 1};
+
+    auto res = rotateY * rotateZ * ini;
+    return Point3D(res[0], res[1], res[2]);
+}
+
 Point2D CFlightVisualiser::getScreenPoint(const Point3D& p, const Rectangle3D& fieldLimit)
 {
-    std::function<float(float, float)> f = [](float res, float item){ return res + item;};
-
     Util::Vector<float, 3> ini = {p.X(), p.Y(), p.Z()};
     auto view = _viewPoint;
 
@@ -61,7 +136,7 @@ Point2D CFlightVisualiser::getScreenPoint(const Point3D& p, const Rectangle3D& f
                                           0             ,              0, 1};
     ini = rotateY * rotateZ * ini;
 
-    float x = (std::abs(fieldLimit.minX) + ini[0]) / fieldLimit.getDiffX();
+    //float x = (std::abs(fieldLimit.minX) + ini[0]) / fieldLimit.getDiffX();
     float y = (std::abs(fieldLimit.minY) + ini[1]) / fieldLimit.getDiffY();
     float z = (std::abs(fieldLimit.minZ) + ini[2]) / fieldLimit.getDiffZ();
 
@@ -99,14 +174,12 @@ void CFlightVisualiser::resizeEvent(QResizeEvent * event)
 
 void CFlightVisualiser::rotateZ(float rad)
 {
-    std::cout << "Z on " << rad << std::endl;
-    _viewPoint.Alpha() += rad;
+    _viewPoint.AddAlpha(rad);
 }
 
 void CFlightVisualiser::rotateX(float rad)
 {
-    std::cout << "X on " << rad << std::endl;
-    _viewPoint.Beta() += rad;
+    _viewPoint.AddBeta(rad);
 }
 
 Rectangle3D& CFlightVisualiser::getMaximumRect()
@@ -199,3 +272,4 @@ void CFlightVisualiser::paintEvent(QPaintEvent * arg)
     drawCords(painter, maxRect);
     drawPathes(painter, maxRect);
 }
+

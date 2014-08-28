@@ -1,29 +1,36 @@
 #include "ccontrolledtarget.h"
+#include <iostream>
 
-void CControlledTarget::timeStep(float dt, KeyDirection accelDirection)
+Point3D CControlledTarget::timeStep(float dt, KeyDirection accelDirection)
 {
     _position = _position + _velocity * dt;
-    _velocity = _velocity * (1 + _retardKoef * dt);
-    _velocity = _velocity + _accel * dt;
-    Vector3D speedDirection = _velocity.direction();
 
+    float speedScalar = _velocity.Scalar();
+    Point3D speedUno = _velocity.UnoPoint();
+    Point3D accelUno = speedUno;
+
+    const float angleDiff = 90;
     switch(accelDirection)
     {
         case UP:
-            speedDirection.Beta() += Grad(90).GetRad();
+            accelUno = rotate(accelUno, Vector3D(Grad(0), Grad(angleDiff)));
             break;
         case DOWN:
-            speedDirection.Beta() += Grad(-90).GetRad();
+            accelUno = rotate(accelUno, Vector3D(Grad(0), Grad(-angleDiff)));
             break;
         case LEFT:
-            speedDirection.Alpha() += Grad(-90).GetRad();
+            accelUno = rotate(accelUno, Vector3D(Grad(-angleDiff), Grad(0)));
             break;
         case RIGHT:
-            speedDirection.Alpha() += Grad(-90).GetRad();
+            accelUno = rotate(accelUno, Vector3D(Grad(angleDiff), Grad(0)));
             break;
         case FORWARD:
             break;
         default:;
     }
-    _accel = speedDirection * _retardKoef;
+
+    Point3D summaryAccel = accelUno - speedUno;
+    _velocity = _velocity + summaryAccel * (_retardKoef * dt);
+    _velocity = _velocity.UnoPoint() * speedScalar;
+    return _position;
 }

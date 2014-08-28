@@ -1,5 +1,6 @@
 #include "flightpanel.h"
 #include <QTimer>
+#include <iostream>
 
 const float FlightPanel::controlHeight = 100;
 
@@ -58,6 +59,18 @@ void FlightPanel::resizeEvent(QResizeEvent* event)
 
     left->move(leftButtonLeft, sideTopBottom);
     right->move(rightButtonLeft, sideTopBottom);
+}
+
+void FlightPanel::setTargetPosition(Point3D target)
+{
+    std::cout << target;
+    this->wi.setTargetPosition(target);
+
+}
+
+void FlightPanel::setChaserPosition(Point3D chaser)
+{
+    this->wi.setChaserPosition(chaser);
 }
 
 void FlightPanel::tick()

@@ -30,9 +30,18 @@ public:
     Vector3D(Grad alpha, Grad beta): _alpha(alpha.GetRad()), _beta(beta.GetRad())
     {
     }
-    float& Alpha() { return _alpha;}
-    float& Beta() { return _beta;}
+    float Alpha() const { return _alpha;}
+    float Beta()  const { return _beta;}
+
+    void AddAlpha(float alpha);
+    void AddAlpha(Grad alpha) { AddAlpha(alpha.GetRad());}
+
+    void AddBeta(float beta);
+    void AddBeta(Grad beta) { AddBeta(beta.GetRad());}
 };
+
+Vector3D operator+(const Vector3D& lhs, const Vector3D& rhs);
+Vector3D operator-(const Vector3D& lhs, const Vector3D& rhs);
 
 
 struct Point3D
@@ -47,24 +56,49 @@ public:
     const float& Y() const {return _y;}
     const float& Z() const {return _z;}
 
+    Point3D rotate(Vector3D v)
+    {
+
+    }
+
     Vector3D direction() const
     {
         // if direction is along axisY - then angles are zeros
-        return Vector3D(std::asin(
-                     std::sqrt(X()* X() + Y() * Y()) /
-                     X()
-                     ),
-                 std::asin(
-                     std::sqrt(X() * X() + Y() * Y() + Z() * Z()) /
-                     Z()
-                     )
-                 );
+        if(X() == 0)
+        {
+            return Vector3D(0, 0);
+        }
+
+        float xyDiag = std::sqrt(X() * X() + Y() * Y());
+        float spaceDiag = std::sqrt(X() * X() + Y() * Y() + Z() * Z());
+
+        float alpha = std::asin(X() / xyDiag);
+        float beta = std::asin(Z() / spaceDiag);
+        return Vector3D(alpha, beta);
+    }
+
+    Point3D UnoPoint()
+    {
+        float len = Scalar();
+        if(len == 0)
+        {
+            throw std::logic_error("zero Point");
+        }
+        return Point3D(X()/len, Y()/len, Z()/len);
     }
 
     Point3D(float x, float y, float z): _x(x), _y(y), _z(z)
     {
     }
+
+    float Scalar() const {return std::sqrt(X() * X() + Y() * Y() + Z() * Z());}
+
+    std::string toString() const;
 };
+
+Point3D operator-(const Point3D& lhs, const Point3D rhs);
+
+std::ostream& operator<<(std::ostream& os, const Point3D p);
 
 struct Point2D
 {
@@ -127,6 +161,8 @@ struct Rectangle3D
 Point3D operator*(const Point3D& p, float dt);
 Point3D operator+(const Point3D& p1, const Point3D& p2);
 Point3D operator*(Vector3D v, float scalar);
+
+Point3D rotate(const Point3D& p, const Vector3D& v);
 
 class CFlightVisualiser : public QWidget
 {
