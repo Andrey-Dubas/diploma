@@ -17,13 +17,15 @@ SOURCES += main.cpp\
     ../../FlightReviewPanel/flightpanel.cpp \
     ../../FlightReviewPanel/cflightvisualiser.cpp \
     ccontrolledtarget.cpp \
-    ../../FlightReviewPanel/GeometryStructures.cpp
+    ../../FlightReviewPanel/GeometryStructures.cpp \
+    cmissle.cpp
 
 HEADERS  += mainwindow.h \
     ../../FlightReviewPanel/flightpanel.h \
     ../../FlightReviewPanel/cflightvisualiser.h \
     ccontrolledtarget.h \
-    ../../FlightReviewPanel/GeometryStructures.h
+    ../../FlightReviewPanel/GeometryStructures.h \
+    cmissle.h
 
 FORMS    += mainwindow.ui
 
