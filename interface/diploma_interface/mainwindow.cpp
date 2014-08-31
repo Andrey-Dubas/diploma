@@ -4,7 +4,7 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    _target(Point3D(100, 100, 100), Point3D(10, 10, 0)),
+    _target(Point3D(100, 100, 100), Point3D(10, 10, 0), Point3D(10, -10, 0)),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->startModellingButton, SIGNAL(clicked()), this, SLOT(startModelling()));
 }
 
-void MainWindow::resizeEvent(QResizeEvent * event)
+void MainWindow::resizeEvent(QResizeEvent *)
 {
     QRect rect = ui->spaceViewer->geometry();
     _overviewPanel->setGeometry(QRect(QPoint(0, 0), QSize(rect.width(), rect.height())));
@@ -25,8 +25,6 @@ void MainWindow::resizeEvent(QResizeEvent * event)
 void MainWindow::keyPressEvent(QKeyEvent * event)
 {
     QString txt = event->text();
-
-    std::cout << txt.toUtf8().constData() << std::endl;
 
     switch(event->key())
     {
@@ -58,14 +56,15 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 
 void MainWindow::dataProvide()
 {
-    std::cout << "direction: " << _curDirection << std::endl;
-    Point3D pos = _target.timeStep(_modellingStepIntervalMilisec * 0.001, _curDirection);
+    Point3D pos = _target.timeStep(_modellingStepIntervalMilisec * 0.001, _curDirection);//_curDirection); // FIX
     this->_overviewPanel->setTargetPosition(pos);
 
 
     ui->positionView->setText(QString(_target.Position().toString().data()));
     ui->speedView->setText(QString(_target.Speed().toString().data()));
-    //ui->accelerationView->setText(QString(_target.Acceleration().toString().data()));
+    ui->orientationView->setText(QString(_target.Orientation().toString().data()));
+
+    //std::cout << "speed vector: " << _target.Speed() << std::cout;
 }
 
 

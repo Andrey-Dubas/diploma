@@ -9,82 +9,7 @@
 #include </home/andy/diploma_code_2/diploma/DataOperations.h>
 #include "cflightvisualiser.h"
 #include <sstream>
-
-void Vector3D::AddAlpha(float alpha)
-{
-    _alpha += alpha;
-    if(_alpha > pi)
-    {
-        _alpha -= 2 * pi;
-    }
-
-    if (_alpha < -pi)
-    {
-        _alpha += 2 * pi;
-    }
-}
-
-void Vector3D::AddBeta(float beta)
-{
-    _beta += beta;
-    if(_beta > pi)
-    {
-        _beta -= 2 * pi;
-    }
-
-    if (_beta < -pi)
-    {
-        _beta += 2*pi;
-    }
-}
-
-Vector3D operator+(const Vector3D& lhs, const Vector3D& rhs)
-{
-    return Vector3D(lhs.Alpha() + rhs.Alpha(), lhs.Beta() + rhs.Beta());
-}
-
-Vector3D operator-(const Vector3D& lhs, const Vector3D& rhs)
-{
-    return Vector3D(lhs.Alpha() - rhs.Alpha(), lhs.Beta() - rhs.Beta());
-}
-
-
-
-Point3D operator*(const Point3D& p, float dt)
-{
-    return Point3D(p.X() * dt, p.Y() * dt, p.Z() * dt );
-}
-
-Point3D operator+(const Point3D& p1, const Point3D& p2)
-{
-    return Point3D(p1.X() + p2.X(), p1.Y() + p2.Y(), p1.Z() + p2.Z() );
-}
-
-Point3D operator-(const Point3D& lhs, const Point3D rhs)
-{
-    return Point3D(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z() );
-}
-
-Point3D operator*(Vector3D v, float scalar)
-{
-    float x = scalar * cos(v.Beta()) * cos(v.Alpha());
-    float y = scalar * cos(v.Beta()) * sin(v.Alpha());
-    float z = scalar * sin(v.Beta());
-    return Point3D(x, y, z);
-}
-
-std::string Point3D::toString() const
-{
-    std::stringstream stream;
-    stream << "X: "<< X() << ", Y: " << Y() << ", Z: " << Z();
-    return stream.str();
-}
-
-std::ostream& operator<<(std::ostream& os, const Point3D p)
-{
-    os << p.toString() << std::endl;
-    return os;
-}
+#include "GeometryStructures.h"
 
 CFlightVisualiser::CFlightVisualiser(QWidget *parent, Point3D target, Point2D centralScreenPoint, Point3D scaleView, Vector3D viewPoint):
     QWidget(parent), _centralScreenPoint(centralScreenPoint), _scale(scaleView), _viewPoint(viewPoint)
@@ -101,58 +26,30 @@ CFlightVisualiser::CFlightVisualiser(QWidget *parent) :
 
 }
 
-Point3D rotate(const Point3D& p, const Vector3D &v)
+
+
+Point2D CFlightVisualiser::getScreenPoint(const Point3D& p, const QRect& fieldLimit)
 {
-    Util::Vector<float, 3> ini = {p.X(), p.Y(), p.Z()};
-    float alpha = v.Alpha();
-    float beta = v.Beta();
+    Point2D plain = getPlainCords(p);
+    float y = (-fieldLimit.left() + plain.X()) / (fieldLimit.right() - fieldLimit.left());
+    float z = (-fieldLimit.bottom() + plain.Y()) / (fieldLimit.top() - fieldLimit.bottom());
 
-    Util::Matrix<float, 3, 3> rotateY = { std::cos(beta), 0, std::sin(beta),
-                                          0             , 1, 0,
-                                          -std::sin(beta), 0, std::cos(beta)};
+    y *= this->width();
+    z *= this->height();
 
-    Util::Matrix<float, 3, 3> rotateZ = { std::cos(alpha), std::sin(alpha), 0,
-                                          -std::sin(alpha), std::cos(alpha), 0,
-                                          0             ,              0, 1};
-
-    auto res = rotateY * rotateZ * ini;
-    return Point3D(res[0], res[1], res[2]);
+    return Point2D(y, /*this->height() -*/ z);
 }
 
-Point2D CFlightVisualiser::getScreenPoint(const Point3D& p, const Rectangle3D& fieldLimit)
+Point2D CFlightVisualiser::getPlainCords(const Point3D &p)
 {
-    Util::Vector<float, 3> ini = {p.X(), p.Y(), p.Z()};
-    auto view = _viewPoint;
+    Vector3D view = _viewPoint;
 
     float alpha = -view.Alpha();
     float beta = -view.Beta();
 
-    Util::Matrix<float, 3, 3> rotateY = { std::cos(beta), 0, std::sin(beta),
-                                          0             , 1, 0,
-                                          -std::sin(beta), 0, std::cos(beta)};
-
-    Util::Matrix<float, 3, 3> rotateZ = { std::cos(alpha), std::sin(alpha), 0,
-                                          -std::sin(alpha), std::cos(alpha), 0,
-                                          0             ,              0, 1};
-    ini = rotateY * rotateZ * ini;
-
-    //float x = (std::abs(fieldLimit.minX) + ini[0]) / fieldLimit.getDiffX();
-    float y = (std::abs(fieldLimit.minY) + ini[1]) / fieldLimit.getDiffY();
-    float z = (std::abs(fieldLimit.minZ) + ini[2]) / fieldLimit.getDiffZ();
-
-    y *= (this->width());
-    z *= (this->height());
-
-    return Point2D(y, this->height() - z);
+    Point3D res = rotate(p, Vector3D(alpha, beta));
+    return Point2D(res.Y(), res.Z());
 }
-
-/*
-void CFlightVisualiser::mathModelState(Point3D chaser, Point3D target)
-{
-    _chaser.push_back(chaser);
-    _target.push_back(target);
-}
-*/
 
 void CFlightVisualiser::resizeEvent(QResizeEvent * event)
 {
@@ -182,21 +79,33 @@ void CFlightVisualiser::rotateX(float rad)
     _viewPoint.AddBeta(rad);
 }
 
-Rectangle3D& CFlightVisualiser::getMaximumRect()
+Rectangle3D CFlightVisualiser::getMaximumRect()
 {
     Rectangle3D res;
 
-    for(const auto& p: this->_chaser){res.expandRect(p);}
-    for(const auto& p: this->_target){res.expandRect(p);}
+    for(const Point3D& p: this->_chaser){res.expandRect(p);}
+    for(const Point3D& p: this->_target){res.expandRect(p);}
 
     res.expandRect(Point3D(-10, -10, -10));
     res.expandRect(Point3D(10, 10, 10));
     return res;
 }
 
-void CFlightVisualiser::drawCords(QPainter& painter, const Rectangle3D& fieldLimit)
+QRect CFlightVisualiser::getMaximumRect2D()
 {
-    //QPen oldPen = painter.pen();
+    QRect res;
+
+    for(const Point3D& p: this->_chaser){res = ::expandRect(getPlainCords(p), res);}
+    for(const Point3D& p: this->_target){res = ::expandRect(getPlainCords(p), res);}
+
+    res = ::expandRect(Point2D(-10, -10), res);
+    res = ::expandRect(Point2D(10, 10), res);
+    return QRect(res.left() - res.width()/10, res.top() - res.height()/10,
+                 res.width() * 1.2, res.height() * 1.2);
+}
+
+void CFlightVisualiser::drawCords(QPainter& painter, const QRect& fieldLimit)
+{
     painter.setPen(Qt::DashLine);
 
     Point3D zero3D(0, 0, 0), x3D(100, 0, 0), y3D(0, 100, 0), z3D(0, 0, 100);
@@ -217,7 +126,7 @@ void CFlightVisualiser::drawCords(QPainter& painter, const Rectangle3D& fieldLim
 
     painter.setPen(Qt::SolidLine);
 
-    //QVector<QPoint> frameCords = {QPoint(0, 0), QPOint(0, this->height()), QPoint(this->width(), this->height()), QPoint(this->width(), 0)};
+
     const int distance = 1;
     std::vector<QPoint> frameVec = {QPoint(distance, distance), QPoint(distance, this->height() - distance),
                                     QPoint(distance, this->height() - distance), QPoint(this->width() - distance, this->height() - distance),
@@ -232,7 +141,7 @@ void CFlightVisualiser::drawCords(QPainter& painter, const Rectangle3D& fieldLim
     painter.drawLines(frameCords);
 }
 
-void CFlightVisualiser::drawPathes(QPainter& painter, const Rectangle3D& fieldLimit)
+void CFlightVisualiser::drawPathes(QPainter& painter, const QRect &fieldLimit)
 {
 
 
@@ -242,14 +151,15 @@ void CFlightVisualiser::drawPathes(QPainter& painter, const Rectangle3D& fieldLi
         std::runtime_error("No path for target and chaser");
     }
 
-    targetPath.moveTo(QPointF(getScreenPoint(_target[0], fieldLimit)));
+    QPointF targetStart = QPointF(getScreenPoint(_target[0], fieldLimit));
+    targetPath.moveTo(targetStart);
     chaserPath.moveTo(QPointF(getScreenPoint(_chaser[0], fieldLimit)));
 
-    std::for_each(_target.begin() + 1, _target.end(),
-                  [&](Point3D p){
-                    targetPath.lineTo(QPointF(getScreenPoint(p, fieldLimit)));
-                  }
-    );
+    for(auto iter = _target.begin() + 1; iter != _target.end(); ++iter)
+    {
+          QPointF res = getScreenPoint(*iter, fieldLimit);
+          targetPath.lineTo(res);
+    }
 
     std::for_each(_chaser.begin() + 1, _chaser.end(),
                   [&](Point3D p){
@@ -264,12 +174,11 @@ void CFlightVisualiser::drawPathes(QPainter& painter, const Rectangle3D& fieldLi
     painter.drawEllipse(getScreenPoint(*(_chaser.end()-1), fieldLimit), 5, 5);
 }
 
-void CFlightVisualiser::paintEvent(QPaintEvent * arg)
+void CFlightVisualiser::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
 
-    const Rectangle3D maxRect = getMaximumRect();
+    QRect maxRect = getMaximumRect2D();
     drawCords(painter, maxRect);
     drawPathes(painter, maxRect);
 }
-

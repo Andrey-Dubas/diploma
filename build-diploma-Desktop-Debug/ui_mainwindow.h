@@ -37,7 +37,7 @@ public:
     QLabel *label;
     QLineEdit *speedView;
     QLabel *label_2;
-    QLineEdit *accelerationView;
+    QLineEdit *orientationView;
     QLabel *label_3;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
@@ -129,11 +129,11 @@ public:
         label_2 = new QLabel(centralWidget);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(450, 60, 67, 17));
-        accelerationView = new QLineEdit(centralWidget);
-        accelerationView->setObjectName(QStringLiteral("accelerationView"));
-        accelerationView->setEnabled(false);
-        accelerationView->setGeometry(QRect(550, 100, 301, 27));
-        accelerationView->setCursorPosition(0);
+        orientationView = new QLineEdit(centralWidget);
+        orientationView->setObjectName(QStringLiteral("orientationView"));
+        orientationView->setEnabled(false);
+        orientationView->setGeometry(QRect(550, 100, 301, 27));
+        orientationView->setCursorPosition(0);
         label_3 = new QLabel(centralWidget);
         label_3->setObjectName(QStringLiteral("label_3"));
         label_3->setGeometry(QRect(446, 100, 91, 20));
@@ -161,7 +161,7 @@ public:
         startModellingButton->setText(QApplication::translate("MainWindow", "start", 0));
         label->setText(QApplication::translate("MainWindow", "position:", 0));
         label_2->setText(QApplication::translate("MainWindow", "speed:", 0));
-        label_3->setText(QApplication::translate("MainWindow", "acceleration:", 0));
+        label_3->setText(QApplication::translate("MainWindow", "orientation:", 0));
     } // retranslateUi
 
 };

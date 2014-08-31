@@ -63,9 +63,7 @@ void FlightPanel::resizeEvent(QResizeEvent* event)
 
 void FlightPanel::setTargetPosition(Point3D target)
 {
-    std::cout << target;
     this->wi.setTargetPosition(target);
-
 }
 
 void FlightPanel::setChaserPosition(Point3D chaser)
@@ -75,18 +73,6 @@ void FlightPanel::setChaserPosition(Point3D chaser)
 
 void FlightPanel::tick()
 {
-/*
-    static float x = 0;
-    const float chaserAmplitudeX = 50;
-    const float chaserAmplitudeY = 50;
-    const float targetAmplitudeX = 50;
-    const float targetAmplitudeY = 50;
-    const float lenKoef = 10;
-
-    this->wi.mathModelState(Point3D(0 * lenKoef, chaserAmplitudeX * std::sin(x - 1), chaserAmplitudeY * std::cos(x - 1)),
-                            Point3D(0 * lenKoef, targetAmplitudeX * std::sin(x), targetAmplitudeY * std::cos(x)));
-    x += 0.1;
-*/
     this->wi.update();
 }
 

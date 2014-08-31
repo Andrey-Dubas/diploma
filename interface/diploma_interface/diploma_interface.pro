@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     ../../FlightReviewPanel/flightpanel.cpp \
     ../../FlightReviewPanel/cflightvisualiser.cpp \
-    ccontrolledtarget.cpp
+    ccontrolledtarget.cpp \
+    ../../FlightReviewPanel/GeometryStructures.cpp
 
 HEADERS  += mainwindow.h \
     ../../FlightReviewPanel/flightpanel.h \
     ../../FlightReviewPanel/cflightvisualiser.h \
-    ccontrolledtarget.h
+    ccontrolledtarget.h \
+    ../../FlightReviewPanel/GeometryStructures.h
 
 FORMS    += mainwindow.ui
 
