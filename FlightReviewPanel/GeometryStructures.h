@@ -67,7 +67,7 @@ public:
         // if direction is along axisY - then angles are zeros
         if(Y() == 0 && X() == 0 && Z() == 0)
         {
-            throw std::logic_error("no direction for zero vector");
+            return Vector3D(0, 0);//throw std::logic_error("no direction for zero vector");
         }
         if(X() == 0 && Y() == 0)
         {
@@ -177,5 +177,8 @@ Point3D rotate(const Point3D& p, const Vector3D& v);
 Point3D rotateX(const Point3D& p, float angle);
 Point3D rotateY(const Point3D& p, float angle);
 Point3D rotateZ(const Point3D& p, float angle);
+
+Point3D polarToDekart(float vector, Vector3D orientation);
+std::pair<float, Vector3D> dekartToPolar(Point3D point);
 
 #endif // GEOMETRYSTRUCTURES_H

@@ -1,11 +1,23 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <iostream>
+#include "/home/andy/diploma_code_2/FlightReviewPanel/GeometryStructures.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    _target(Point3D(100, 100, 100), Point3D(10, 10, 0), Point3D(10, -10, 0)),
-    ui(new Ui::MainWindow)
+    QMainWindow(parent)
+    , _target(Point3D(100, 100, 100), Point3D(10, 10, 0), Point3D(10, -10, 0))
+    , ui(new Ui::MainWindow)
+    , _chaser(
+          CMissle(
+              Point3D(0, 0, 0),
+              Point3D(0, 0, 20),
+              Point3D(100, 100, 100),
+              new MathModel(),
+              new GuidanceAlgo(),
+              new CKalman(),
+              new SignalApplier()
+          )
+     )
 {
     ui->setupUi(this);
     _curDirection = FORWARD;
@@ -56,9 +68,29 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 
 void MainWindow::dataProvide()
 {
-    Point3D pos = _target.timeStep(_modellingStepIntervalMilisec * 0.001, _curDirection);//_curDirection); // FIX
-    this->_overviewPanel->setTargetPosition(pos);
+    Point3D targetPos = _target.timeStep(_modellingStepIntervalMilisec * 0.001, _curDirection);//_curDirection); // FIX
+    this->_overviewPanel->setTargetPosition(targetPos);
 
+    std::pair<float, Vector3D> relativeDistance = dekartToPolar(_chaser.RelativePosition());
+    std::pair<float, Vector3D> targetSpeed = dekartToPolar(_target.Speed());
+    std::pair<float, Vector3D> chaserSpeed = dekartToPolar(_chaser.Velocity());
+
+    CMissle::Vector realPosition = {
+        relativeDistance.first, relativeDistance.second.Alpha(), relativeDistance.second.Beta(),
+        targetSpeed.first, targetSpeed.second.Alpha(), targetSpeed.second.Beta(),
+        chaserSpeed.first, chaserSpeed.second.Alpha(), chaserSpeed.second.Beta()
+    };
+    CMissle::Vector distortedModel = DistortionFunction(
+        realPosition
+    );
+
+    _chaser.timeStep(
+                distortedModel,
+                _modellingStepIntervalMilisec * 0.001);
+
+    Point3D chaserPosition = targetPos - _chaser.RelativePosition();
+
+    this->_overviewPanel->setChaserPosition(chaserPosition);
 
     ui->positionView->setText(QString(_target.Position().toString().data()));
     ui->speedView->setText(QString(_target.Speed().toString().data()));
@@ -82,6 +114,18 @@ void MainWindow::startModelling()
         _timer.stop();
         ui->startModellingButton->setText("Start");
     }
+}
+
+CMissle::Vector MainWindow::DistortionFunction(const CMissle::Vector& realState)
+{
+    return realState;
+}
+
+CMissle::Vector MainWindow::chaserEvolution(const CMissle::Vector& realState, const CControlledTarget& target, float dt)
+{
+    CMissle::Vector result;
+
+    return result;
 }
 
 MainWindow::~MainWindow()

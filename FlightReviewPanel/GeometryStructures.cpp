@@ -4,6 +4,7 @@
 #include </home/andy/diploma_code_2/diploma/DataOperations.h>
 #include "cflightvisualiser.h"
 #include <sstream>
+#include <math.h>
 
 void Vector3D::AddAlpha(float alpha)
 {
@@ -180,4 +181,30 @@ Point3D rotateY(const Point3D& p, float angle)
 Point3D rotateZ(const Point3D& p, float angle)
 {
     return p;
+}
+
+Point3D polarToDekart(float vector, Vector3D orientation)
+{
+    Point3D result(
+                vector * std::cos(orientation.Beta()) * cos(orientation.Alpha()),
+                vector * std::cos(orientation.Beta()) * sin(orientation.Alpha()),
+                vector * std::sin(orientation.Beta()));
+    return result;
+}
+
+std::pair<float, Vector3D> dekartToPolar(Point3D point)
+{
+    using RetType = std::pair<float, Vector3D>;
+    float scalar = std::sqrt(point.X()*point.X() + point.Y()*point.Y() + point.Z()*point.Z());
+    if (scalar == 0)
+    {
+        return RetType(0, Vector3D(0, 0));
+    }
+    float beta = std::asin(point.Z() / scalar);
+    if (point.X() == 0)
+    {
+        return RetType(scalar, Vector3D(beta, pi/2));
+    }
+    float alpha = std::atan(point.Y() / point.X());
+    return RetType(scalar, Vector3D(alpha, beta));
 }

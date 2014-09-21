@@ -161,17 +161,21 @@ void CFlightVisualiser::drawPathes(QPainter& painter, const QRect &fieldLimit)
           targetPath.lineTo(res);
     }
 
-    std::for_each(_chaser.begin() + 1, _chaser.end(),
-                  [&](Point3D p){
-                    chaserPath.lineTo(QPointF(getScreenPoint(p, fieldLimit)));
-                  }
-    );
+    for(auto iter = _chaser.begin() + 1; iter != _chaser.end(); ++iter)
+    {
+          QPointF res = getScreenPoint(*iter, fieldLimit);
+          targetPath.lineTo(res);
+    }
 
     painter.drawPath(targetPath);
     painter.drawPath(chaserPath);
 
     painter.drawEllipse(getScreenPoint(*(_target.end()-1), fieldLimit), 5, 5);
     painter.drawEllipse(getScreenPoint(*(_chaser.end()-1), fieldLimit), 5, 5);
+
+    int x =  (_chaser.end()-1)->X();
+    int Y =  (_chaser.end()-1)->Y();
+    int Z =  (_chaser.end()-1)->Z();
 }
 
 void CFlightVisualiser::paintEvent(QPaintEvent *)

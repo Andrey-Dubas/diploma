@@ -55,7 +55,7 @@ Point3D CControlledTarget::timeStep(float dt, KeyDirection accelDirection)
     }
     catch(std::logic_error)
     {
-
+        int i = 0;
     }
     return _position;
 }

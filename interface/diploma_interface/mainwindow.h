@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "ccontrolledtarget.h"
+#include "cmissle.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,12 +25,18 @@ protected:
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
 private:
+    CMissle::Vector DistortionFunction(const CMissle::Vector& realState);
+    CMissle::Vector chaserEvolution(const CMissle::Vector& realState, const CControlledTarget& target, float dt);
+
+
+private:
     Ui::MainWindow *ui;
 
     QTimer _timer;
     float _modellingStepIntervalMilisec = 50;
 
     CControlledTarget _target;
+    CMissle _chaser;
     KeyDirection _curDirection;
 
     std::unique_ptr<FlightPanel> _overviewPanel;

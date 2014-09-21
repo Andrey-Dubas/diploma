@@ -25,7 +25,8 @@ HEADERS  += mainwindow.h \
     ../../FlightReviewPanel/cflightvisualiser.h \
     ccontrolledtarget.h \
     ../../FlightReviewPanel/GeometryStructures.h \
-    cmissle.h
+    cmissle.h \
+    isignalapplier.h
 
 FORMS    += mainwindow.ui
 
