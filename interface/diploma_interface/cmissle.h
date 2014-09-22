@@ -66,7 +66,7 @@ class MathModel: public IMathModel<ParamAmount>
 
         distance.X() = distance.X() - (vMissle.X() - vTarget.X()) * dt;
         distance.Y() = distance.Y() - (vMissle.Y() - vTarget.Y()) * dt;
-        distance.Z() = distance.Z() + (vMissle.Z() - vTarget.Z()) * dt;
+        distance.Z() = distance.Z() - (vMissle.Z() - vTarget.Z()) * dt;
 
         nextState[DISTANCE] = distance.Scalar();
 
@@ -94,15 +94,17 @@ public:
         Point3D vTarget = Vector3D(state[TARGET_SPEED_ALPHA], state[TARGET_SPEED_BETA])
                                   * state[TARGET_SPEED];
 
-        Point3D dDistance = vTarget - vMissle;
+        Point3D dDistance = vMissle - vTarget;
 
-        Point3D desired = distance.direction() * dDistance.Scalar();
+        Point3D dDesired = distance.direction() * dDistance.Scalar();
 
-        Point3D deviation = desired - dDistance;
+        Point3D dToOptimal = dDesired - dDistance;
 
-        Point3D desiredSpeed = vMissle + deviation;
+        Point3D desiredSpeed = vMissle + dToOptimal;
 
-        return {desiredSpeed.direction().Alpha(), desiredSpeed.direction().Beta()};
+        SignalVector result = {desiredSpeed.direction().Alpha() - vMissle.direction().Alpha(),
+                               desiredSpeed.direction().Beta() - vMissle.direction().Beta()};
+        return result;
 
     }
 };
@@ -113,7 +115,7 @@ class SignalApplier: public ISignalApplier<ParamAmount, SignalAmount>
 public:
     StateVector apply(const StateVector& state, const SignalVector& signal, float dt) override
     {
-        static float koef = 0.1;
+        static float koef = 0.4;
 
         StateVector result = state;
         result[MISSLE_SPEED_ALPHA] += signal[SPEED_ALPHA]* koef * dt;

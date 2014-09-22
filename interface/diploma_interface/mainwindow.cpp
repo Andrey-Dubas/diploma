@@ -95,8 +95,6 @@ void MainWindow::dataProvide()
     ui->positionView->setText(QString(_target.Position().toString().data()));
     ui->speedView->setText(QString(_target.Speed().toString().data()));
     ui->orientationView->setText(QString(_target.Orientation().toString().data()));
-
-    //std::cout << "speed vector: " << _target.Speed() << std::cout;
 }
 
 
